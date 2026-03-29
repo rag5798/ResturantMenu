@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Status</title>
+    <link rel="stylesheet" href="menu.css" />
+    <link rel="stylesheet" href="checkout.css" />
+</head>
+<body>
+    <nav id="topbar">
+        <span class="brand">Bistro</span>
+        <div class="nav-links">
+            <a href="/">Menu</a>
+            <a href="/order-status">My Order</a>
+            <a href="/admin">Admin</a>
+        </div>
+    </nav>
+
+    <div id="lookup-container">
+        <h1>Check Order Status</h1>
+        <div id="lookup-form" class="lookup-card">
+            <label for="lookup-email">Email</label>
+            <input type="email" id="lookup-email" placeholder="email@example.com" />
+            <label for="lookup-order-id">Order ID (last 6 characters)</label>
+            <input type="text" id="lookup-order-id" placeholder="e.g. A1B2C3" maxlength="24" />
+            <button id="lookup-btn">Find Order</button>
+            <p id="lookup-error" class="pay-error hidden"></p>
+        </div>
+
+        <div id="lookup-result" class="hidden">
+            <div id="order-detail"></div>
+            <button onclick="document.getElementById('lookup-result').classList.add('hidden'); document.getElementById('lookup-form').classList.remove('hidden');" class="back-link">Look up another order</button>
+        </div>
+    </div>
+
+    <script src="order-status.js"></script>
+</body>
+</html>

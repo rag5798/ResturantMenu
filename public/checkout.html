@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <link rel="stylesheet" href="menu.css" />
+    <link rel="stylesheet" href="checkout.css" />
+</head>
+<body>
+    <nav id="topbar">
+        <span class="brand">Bistro</span>
+        <div class="nav-links">
+            <a href="/">Menu</a>
+            <a href="/order-status">My Order</a>
+            <a href="/admin">Admin</a>
+        </div>
+    </nav>
+
+    <!-- Checkout form (before payment) -->
+    <div id="checkout-container">
+        <h1>Checkout</h1>
+
+        <!-- Order summary -->
+        <div id="order-summary">
+            <h2>Order Summary</h2>
+            <div id="summary-items"></div>
+            <div id="summary-total"></div>
+        </div>
+
+        <!-- Customer info -->
+        <div id="customer-form">
+            <h2>Your Details</h2>
+            <label for="custName">Name</label>
+            <input type="text" id="custName" placeholder="Your name" required aria-required="true" />
+            <label for="custEmail">Email</label>
+            <input type="email" id="custEmail" placeholder="email@example.com" required aria-required="true" />
+        </div>
+
+        <!-- Order type -->
+        <div id="order-type-section">
+            <h2>Order Type</h2>
+            <div class="order-type-tabs">
+                <button class="order-type-tab active" data-type="pickup">Pickup</button>
+                <button class="order-type-tab" data-type="delivery" disabled title="Coming soon">Delivery (Coming Soon)</button>
+            </div>
+            <div id="pickup-info" class="pickup-info">
+                <p class="pickup-label">Pick up your order at:</p>
+                <p id="store-address" class="store-address"></p>
+                <p id="store-phone" class="store-phone"></p>
+            </div>
+        </div>
+
+        <!-- Pay button (redirects to Stripe Checkout) -->
+        <div id="payment-section">
+            <button id="payBtn">Pay with Stripe</button>
+            <p id="pay-error" class="pay-error hidden"></p>
+        </div>
+    </div>
+
+    <!-- Success message (shown after server-side verification) -->
+    <div id="success-msg" class="hidden">
+        <h2>Order Placed!</h2>
+        <p>Thank you<span id="success-name"></span> for your order. Your food is being prepared.</p>
+        <div id="success-items" class="success-items-card"></div>
+        <p id="success-total" class="success-detail"></p>
+        <div id="success-pickup" class="success-pickup-card">
+            <h3>Pickup Details</h3>
+            <p id="success-store-address" class="store-address"></p>
+            <p id="success-store-phone" class="store-phone"></p>
+        </div>
+        <p>A confirmation email will be sent shortly.</p>
+        <a id="track-order-link" class="track-order-btn" href="/order-status">Track Your Order</a>
+        <p id="redirect-countdown" class="redirect-countdown"></p>
+        <a href="/">Back to Menu</a>
+    </div>
+
+    <!-- Verification error (payment couldn't be confirmed) -->
+    <div id="verify-error" class="hidden">
+        <h2>Verification Issue</h2>
+        <p></p>
+        <a href="/">Back to Menu</a>
+    </div>
+
+    <!-- Cancelled message -->
+    <div id="cancelled-msg" class="hidden">
+        <h2>Payment Cancelled</h2>
+        <p>Your payment was not completed. Your cart is still saved.</p>
+        <a href="/">Back to Menu</a>
+    </div>
+
+    <script src="checkout.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "name": "restaurant-menu",
+  "version": "1.0.0",
+  "description": "Restaurant menu and payment system with Stripe",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "backup": "node scripts/backup.js",
+    "seed-menu": "node scripts/seed-menu.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "compression": "^1.8.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.3.1",
+    "express-session": "^1.19.0",
+    "helmet": "^8.1.0",
+    "mongodb": "^7.0.0",
+    "morgan": "^1.10.1",
+    "nodemailer": "^8.0.4",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "pino": "^10.3.1",
+    "pino-pretty": "^13.1.3",
+    "pino-roll": "^4.0.0",
+    "stripe": "^14.0.0"
+  },
+  "keywords": [
+    "restaurant",
+    "menu",
+    "payment",
+    "stripe"
+  ],
+  "author": "",
+  "license": "ISC"
+}

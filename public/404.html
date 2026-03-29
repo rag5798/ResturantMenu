@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — Page Not Found</title>
+    <link rel="stylesheet" href="/menu.css" />
+    <style>
+        .not-found {
+            max-width: 560px;
+            margin: 100px auto;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .not-found h1 {
+            font-size: 4rem;
+            margin: 0;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .not-found h2 {
+            font-size: 1.4rem;
+            margin: 12px 0 8px;
+        }
+        .not-found p {
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+        .not-found a {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #0b0f14;
+            font-weight: 700;
+            text-decoration: none;
+            transition: opacity 150ms;
+        }
+        .not-found a:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <nav id="topbar">
+        <span class="brand">Bistro</span>
+        <div class="nav-links">
+            <a href="/">Menu</a>
+            <a href="/admin">Admin</a>
+        </div>
+    </nav>
+    <div class="not-found">
+        <h1>404</h1>
+        <h2>Page Not Found</h2>
+        <p>The page you're looking for doesn't exist or has been moved.</p>
+        <a href="/">Back to Menu</a>
+    </div>
+</body>
+</html>

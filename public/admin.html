@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="menu.css" />
+    <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+    <!-- Login screen (shown when not authenticated) -->
+    <div id="login-screen" class="hidden">
+        <nav id="topbar">
+            <span class="brand">Bistro</span>
+            <div class="nav-links">
+                <a href="/">Menu</a>
+                <a href="/admin">Admin</a>
+            </div>
+        </nav>
+        <div class="login-card">
+            <h1>Admin Login</h1>
+            <p class="login-subtitle">Sign in to manage orders</p>
+            <a href="/auth/google" class="google-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Sign in with Google
+            </a>
+            <p id="login-error" class="error hidden">Access denied. Your Google account is not authorized.</p>
+        </div>
+    </div>
+
+    <!-- Admin dashboard (shown when authenticated) -->
+    <div id="admin-dashboard" class="hidden">
+        <nav id="topbar">
+            <span class="brand">Bistro</span>
+            <div class="nav-links">
+                <a href="/">Menu</a>
+                <a href="/admin">Admin</a>
+            </div>
+            <div class="admin-user">
+                <img id="user-photo" src="" alt="" class="user-avatar" />
+                <span id="user-name"></span>
+                <a href="/auth/logout" class="logout-btn">Logout</a>
+            </div>
+        </nav>
+
+        <!-- Admin tab navigation -->
+        <div id="admin-container">
+            <div id="admin-tabs" role="tablist" aria-label="Admin sections">
+                <button class="admin-tab active" data-tab="orders" role="tab" aria-selected="true">Orders</button>
+                <button class="admin-tab" data-tab="menu-editor" role="tab" aria-selected="false">Menu Editor</button>
+            </div>
+
+            <!-- ORDERS TAB -->
+            <div id="tab-orders" class="tab-panel">
+                <div id="admin-header">
+                    <h1>Orders</h1>
+                    <div id="filter-bar">
+                        <button class="filter active" data-status="all">All</button>
+                        <button class="filter" data-status="pending">Pending</button>
+                        <button class="filter" data-status="preparing">Preparing</button>
+                        <button class="filter" data-status="ready">Ready</button>
+                        <button class="filter" data-status="completed">Completed</button>
+                        <button class="filter" data-status="cancelled">Cancelled</button>
+                    </div>
+                </div>
+                <div id="orders-list">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading orders...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MENU EDITOR TAB -->
+            <div id="tab-menu-editor" class="tab-panel hidden">
+                <div id="admin-header">
+                    <h1>Menu Editor</h1>
+                </div>
+
+                <!-- Add new item form -->
+                <div class="editor-form">
+                    <h2>Add New Item</h2>
+                    <div class="form-row">
+                        <label for="new-category">Category</label>
+                        <select id="new-category"></select>
+                    </div>
+                    <div class="form-row">
+                        <label for="new-name">Name</label>
+                        <input type="text" id="new-name" placeholder="Item name" maxlength="100" />
+                    </div>
+                    <div class="form-row">
+                        <label for="new-desc">Description</label>
+                        <input type="text" id="new-desc" placeholder="Short description" maxlength="300" />
+                    </div>
+                    <div class="form-row">
+                        <label for="new-price">Price ($)</label>
+                        <input type="number" id="new-price" step="0.01" min="0.01" max="9999" placeholder="0.00" />
+                    </div>
+                    <button id="add-item-btn" class="action-btn">Add Item</button>
+                </div>
+
+                <!-- Existing menu items -->
+                <div id="menu-items-list">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading menu...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
+
+    <!-- Confirm modal -->
+    <div id="confirm-overlay" class="confirm-overlay hidden" onclick="cancelConfirm()">
+        <div class="confirm-card" onclick="event.stopPropagation()">
+            <p id="confirm-message">Are you sure?</p>
+            <div class="confirm-actions">
+                <button class="confirm-cancel" onclick="cancelConfirm()">Cancel</button>
+                <button class="confirm-delete" onclick="runConfirmAction()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

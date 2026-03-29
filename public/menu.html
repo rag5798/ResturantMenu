@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Menu</title>
+    <link rel="stylesheet" href="menu.css" />
+</head>
+<body>
+    <nav id="topbar">
+        <span class="brand">Bistro</span>
+        <div class="nav-links">
+            <a href="/">Menu</a>
+            <a href="/order-status">My Order</a>
+            <a href="/admin">Admin</a>
+        </div>
+        <button id="cartBtn" onclick="toggleCart()" aria-label="Open cart" aria-expanded="false" aria-controls="cartSidebar">
+            Cart (<span id="cartCount" aria-live="polite">0</span>)
+        </button>
+    </nav>
+
+    <h1>Menu</h1>
+
+    <!-- Category filter tabs -->
+    <div id="categoryTabs" role="tablist" aria-label="Menu categories">
+        <button class="tab active" data-category="all" role="tab" aria-selected="true">All</button>
+    </div>
+
+    <!-- Menu grid -->
+    <div id="menucon" role="region" aria-label="Menu items">
+        <div id="menu-loading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading menu...</p>
+        </div>
+    </div>
+
+    <!-- Error state (shown if menu fetch fails) -->
+    <div id="menu-error" class="error-state hidden">
+        <p>Could not load menu. Please try again.</p>
+        <button onclick="location.reload()">Retry</button>
+    </div>
+
+    <!-- Cart sidebar -->
+    <div id="cartOverlay" class="hidden" onclick="toggleCart()" aria-hidden="true"></div>
+    <aside id="cartSidebar" class="hidden" role="dialog" aria-label="Shopping cart" tabindex="-1">
+        <h2>Your Order</h2>
+        <div id="cartItems"></div>
+        <div id="cartFooter" class="hidden">
+            <div id="cartTotal">Total: $0.00</div>
+            <button id="checkoutBtn" onclick="goToCheckout()">Proceed to Checkout</button>
+        </div>
+        <p id="cartEmpty">Your cart is empty.</p>
+    </aside>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
+
+    <script src="menu.js"></script>
+</body>
+</html>
