@@ -12,7 +12,6 @@ const MIN_INTERVAL_MS = 5000;
 
 function buildDiscordMessage(log) {
   const level = log.level >= 50 ? 'ERROR' : 'FATAL';
-  const timestamp = new Date(log.time).toLocaleString();
   const msg = log.msg || 'No message';
   const stack = log.err?.stack || log.stack || '';
 

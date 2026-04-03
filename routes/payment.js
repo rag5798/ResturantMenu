@@ -35,7 +35,7 @@ async function findMenuItem(itemId) {
 // Creates a Stripe Checkout hosted session and saves the order
 router.post('/create-checkout-session', async (req, res, next) => {
   try {
-    const { items, customerName, customerEmail } = req.body;
+    const { items, customerName, customerEmail, specialInstructions } = req.body;
 
     if (!items || !items.length) {
       return res.status(400).json({ error: 'No items provided' });
@@ -55,12 +55,19 @@ router.post('/create-checkout-session', async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
+    const safeInstructions = typeof specialInstructions === 'string'
+      ? specialInstructions.replace(/<[^>]*>/g, '').trim().slice(0, 500)
+      : '';
+
     // Validate items and look up TRUSTED prices from menu data
     const verifiedItems = [];
     for (const cartItem of items) {
       const menuItem = await findMenuItem(cartItem.id);
       if (!menuItem) {
         return res.status(400).json({ error: `Unknown menu item: ${cartItem.id}` });
+      }
+      if (menuItem.available === false) {
+        return res.status(400).json({ error: `${menuItem.name} is currently unavailable` });
       }
       const qty = parseInt(cartItem.quantity, 10);
       if (!qty || qty < 1 || qty > 50) {
@@ -96,6 +103,7 @@ router.post('/create-checkout-session', async (req, res, next) => {
       status: 'pending',
       paymentStatus: 'awaiting_payment',
       createdAt: new Date(),
+      ...(safeInstructions && { specialInstructions: safeInstructions }),
     };
     const result = await db.collection('orders').insertOne(order);
 

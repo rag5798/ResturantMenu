@@ -448,3 +448,42 @@ body > h1 {
     left: 12px;
   }
 }
+
+/* ====== Wait time banner ====== */
+.wait-time-banner {
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  margin: 0 16px 16px;
+  font-size: 0.9rem;
+  color: var(--text);
+  text-align: center;
+}
+
+.wait-time-banner strong {
+  color: var(--accent);
+}
+
+/* ====== Sold-out card ====== */
+.menu-card.sold-out {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.menu-card.sold-out img {
+  filter: grayscale(60%);
+}
+
+.sold-out-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: default;
+}

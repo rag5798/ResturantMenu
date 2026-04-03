@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const { getDB } = require('../models/database');
-const { ObjectId } = require('mongodb');
 
 // Admin-only middleware
 function requireAdmin(req, res, next) {
@@ -119,6 +118,55 @@ router.delete('/item/:itemId', verifyCsrf, async (req, res, next) => {
     }
 
     res.json({ message: 'Item deleted' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/admin/menu/item/:itemId/availability — mark as sold out or available
+router.patch('/item/:itemId/availability', verifyCsrf, async (req, res, next) => {
+  try {
+    const { available } = req.body;
+    if (typeof available !== 'boolean') {
+      return res.status(400).json({ error: 'available must be true or false' });
+    }
+    const db = getDB();
+    const result = await db.collection('menu_categories').updateOne(
+      { 'items.id': req.params.itemId },
+      { $set: { 'items.$.available': available } }
+    );
+    if (result.matchedCount === 0) return res.status(404).json({ error: 'Item not found' });
+    res.json({ ok: true, available });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/admin/menu/settings/wait-time — get current estimated wait time
+router.get('/settings/wait-time', async (req, res, next) => {
+  try {
+    const db = getDB();
+    const setting = await db.collection('settings').findOne({ key: 'waitTime' });
+    res.json({ waitTime: setting?.value || null });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/admin/menu/settings/wait-time — set estimated wait time
+router.patch('/settings/wait-time', verifyCsrf, async (req, res, next) => {
+  try {
+    const { waitTime } = req.body;
+    const safe = !waitTime
+      ? null
+      : String(waitTime).replace(/<[^>]*>/g, '').trim().slice(0, 50);
+    const db = getDB();
+    await db.collection('settings').updateOne(
+      { key: 'waitTime' },
+      { $set: { key: 'waitTime', value: safe, updatedAt: new Date() } },
+      { upsert: true }
+    );
+    res.json({ ok: true, waitTime: safe });
   } catch (err) {
     next(err);
   }

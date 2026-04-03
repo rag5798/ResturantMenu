@@ -138,6 +138,7 @@ async function handleCheckout(cart) {
 
   const customerName = document.getElementById('custName').value.trim();
   const customerEmail = document.getElementById('custEmail').value.trim();
+  const specialInstructions = document.getElementById('specialInstructions').value.trim();
 
   if (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
     errorEl.textContent = 'Please enter a valid email so we can send your order confirmation.';
@@ -151,7 +152,7 @@ async function handleCheckout(cart) {
     const res = await fetch('/api/payment/create-checkout-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: cart, customerName, customerEmail }),
+      body: JSON.stringify({ items: cart, customerName, customerEmail, specialInstructions }),
     });
 
     if (!res.ok) {

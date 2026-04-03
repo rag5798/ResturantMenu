@@ -84,4 +84,42 @@ async function sendOrderConfirmation(order) {
   }
 }
 
-module.exports = { sendOrderConfirmation };
+/**
+ * Send "order ready for pickup" email to customer.
+ * Triggered when admin sets status to "ready".
+ */
+async function sendOrderReady(order) {
+  const transport = getTransporter();
+  if (!transport) return;
+  if (!order.customerEmail) return;
+
+  const shortId = order._id.toString().slice(-6).toUpperCase();
+  const storeAddress = process.env.STORE_ADDRESS || '';
+  const storePhone = process.env.STORE_PHONE || '';
+  const storeName = process.env.STORE_NAME || 'Bistro';
+
+  const html = `
+    <div style="max-width:560px;margin:0 auto;font-family:system-ui,-apple-system,sans-serif;color:#333">
+      <h1 style="color:#ff7a59;font-size:24px">Your order is ready!</h1>
+      <p>Hi ${order.customerName || 'there'},</p>
+      <p>Order <strong>#${shortId}</strong> is ready for pickup at <strong>${storeName}</strong>.</p>
+      ${storeAddress ? `<p style="background:#f7f7f7;padding:12px 16px;border-radius:8px;margin:20px 0">${storeAddress}${storePhone ? `<br>${storePhone}` : ''}</p>` : ''}
+      <p>Please come pick up your order at your earliest convenience.</p>
+      <p style="color:#888;font-size:12px;margin-top:30px">${storeName}</p>
+    </div>
+  `;
+
+  try {
+    await transport.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: order.customerEmail,
+      subject: `${storeName} - Your order is ready for pickup! (#${shortId})`,
+      html,
+    });
+    logger.info('Order ready email sent to %s for order %s', order.customerEmail, order._id);
+  } catch (err) {
+    logger.error(err, 'Failed to send order ready email for order %s', order._id);
+  }
+}
+
+module.exports = { sendOrderConfirmation, sendOrderReady };

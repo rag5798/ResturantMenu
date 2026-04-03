@@ -13,7 +13,6 @@
         <div class="nav-links">
             <a href="/">Menu</a>
             <a href="/order-status">My Order</a>
-            <a href="/admin">Admin</a>
         </div>
     </nav>
 
@@ -35,6 +34,8 @@
             <input type="text" id="custName" placeholder="Your name" required aria-required="true" />
             <label for="custEmail">Email</label>
             <input type="email" id="custEmail" placeholder="email@example.com" required aria-required="true" />
+            <label for="specialInstructions">Special Instructions <span class="optional">(optional)</span></label>
+            <textarea id="specialInstructions" placeholder="Allergies, modifications, no onions, etc." maxlength="500" rows="3"></textarea>
         </div>
 
         <!-- Order type -->

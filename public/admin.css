@@ -649,3 +649,204 @@
   .menu-edit-item .field-price { width: 100%; }
   .menu-edit-item .item-actions { justify-content: flex-end; }
 }
+
+/* ====== Analytics ====== */
+.analytics-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.summary-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  text-align: center;
+}
+
+.summary-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.summary-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.summary-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.analytics-section h2 {
+  font-size: 1.1rem;
+  margin: 0 0 16px;
+}
+
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.analytics-table th,
+.analytics-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.analytics-table thead th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  background: var(--bg);
+}
+
+.analytics-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.analytics-table tbody tr:hover {
+  background: var(--bg);
+}
+
+.analytics-table .rank {
+  color: var(--muted);
+  font-size: 0.85rem;
+  width: 32px;
+}
+
+.muted-note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .analytics-summary { grid-template-columns: 1fr; }
+}
+
+/* ====== Wait time control ====== */
+#wait-time-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+#wait-time-control label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+#wait-time-input {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  width: 120px;
+}
+
+#save-wait-time-btn, #clear-wait-time-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+}
+
+#save-wait-time-btn:hover { border-color: var(--accent); color: var(--accent); }
+#clear-wait-time-btn:hover { border-color: var(--muted); }
+
+/* ====== Special instructions on order card ====== */
+.order-instructions {
+  font-size: 0.83rem;
+  color: var(--accent);
+  margin: 4px 0;
+  padding: 4px 8px;
+  background: rgba(255, 180, 84, 0.08);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+}
+
+/* ====== Print button ====== */
+.print-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+}
+
+.print-btn:hover { border-color: var(--text); color: var(--text); }
+
+/* ====== Availability toggle in menu editor ====== */
+.avail-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.btn-available {
+  background: rgba(52, 168, 83, 0.12);
+  color: #34a853;
+  border-color: #34a853;
+}
+
+.btn-available:hover { background: rgba(52, 168, 83, 0.25); }
+
+.btn-soldout {
+  background: rgba(255, 100, 80, 0.12);
+  color: #ff6450;
+  border-color: #ff6450;
+}
+
+.btn-soldout:hover { background: rgba(255, 100, 80, 0.25); }
+
+/* ====== Special instructions textarea on checkout ====== */
+textarea#specialInstructions {
+  width: 100%;
+  background: var(--card, #121926);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 10px;
+  color: var(--text, #e7edf6);
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 16px;
+}
+
+textarea#specialInstructions:focus {
+  outline: none;
+  border-color: var(--accent, #ffb454);
+}
+
+.optional {
+  font-size: 0.8rem;
+  color: var(--muted, #b4bfcc);
+  font-weight: normal;
+}

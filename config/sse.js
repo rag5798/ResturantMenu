@@ -45,14 +45,46 @@ function broadcastOrderUpdate(orderId, data) {
   const clients = orderClients.get(orderId);
   if (clients) {
     for (const res of clients) {
-      res.write(payload);
+      try {
+        res.write(payload);
+        if (typeof res.flush === 'function') res.flush();
+      } catch {
+        clients.delete(res); // dead connection — remove it
+      }
     }
+    if (clients.size === 0) orderClients.delete(orderId);
   }
 
   // Notify all admin clients
   for (const res of adminClients) {
-    res.write(payload);
+    try {
+      res.write(payload);
+      if (typeof res.flush === 'function') res.flush();
+    } catch {
+      adminClients.delete(res); // dead connection — remove it
+    }
   }
 }
 
-module.exports = { addOrderClient, addAdminClient, broadcastOrderUpdate };
+/**
+ * Close all open SSE connections. Called during server shutdown so
+ * server.close() can complete without waiting for long-lived connections.
+ * Sends a final 'shutdown' event so browsers know not to immediately retry.
+ */
+function closeAllConnections() {
+  const shutdownMsg = `event: shutdown\ndata: {}\n\n`;
+
+  for (const clients of orderClients.values()) {
+    for (const res of clients) {
+      try { res.write(shutdownMsg); res.end(); } catch { /* already closed */ }
+    }
+  }
+  for (const res of adminClients) {
+    try { res.write(shutdownMsg); res.end(); } catch { /* already closed */ }
+  }
+
+  orderClients.clear();
+  adminClients.clear();
+}
+
+module.exports = { addOrderClient, addAdminClient, broadcastOrderUpdate, closeAllConnections };

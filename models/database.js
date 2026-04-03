@@ -14,7 +14,7 @@ async function connectDB() {
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
+      client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000, maxPoolSize: 10 });
       await client.connect();
 
       db = client.db(process.env.MONGODB_DB_NAME);

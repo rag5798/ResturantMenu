@@ -4,13 +4,23 @@ function esc(str) {
   return div.innerHTML;
 }
 
-let eventSource = null;
+let eventSources = [];
 let trackedOrders = [];
+
+function closeAllSSE() {
+  eventSources.forEach((es) => es.close());
+  eventSources = [];
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('lookup-btn').addEventListener('click', lookupOrder);
   document.getElementById('lookup-order-id').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') lookupOrder();
+  });
+  document.getElementById('back-btn').addEventListener('click', () => {
+    closeAllSSE();
+    document.getElementById('lookup-result').classList.add('hidden');
+    document.getElementById('lookup-form').classList.remove('hidden');
   });
 
   // Auto-lookup if email/orderId in URL (from checkout success redirect)
@@ -95,37 +105,36 @@ function renderOrders() {
 }
 
 function startSSE() {
-  // Close any existing connection
-  if (eventSource) eventSource.close();
+  closeAllSSE(); // close any existing connections before opening new ones
 
-  // Open one SSE connection per tracked order (usually just 1)
   for (const order of trackedOrders) {
     const es = new EventSource(`/api/order-status/stream?orderId=${encodeURIComponent(order._id)}`);
 
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        // Update the tracked order's status in memory
         const tracked = trackedOrders.find((o) => o._id === data.orderId);
         if (tracked && data.status) {
           tracked.status = data.status;
           renderOrders();
         }
       } catch {
-        // ignore parse errors (heartbeats etc.)
+        // ignore parse errors
       }
     };
+
+    es.addEventListener('shutdown', () => {
+      es.close();
+      eventSources = eventSources.filter((s) => s !== es);
+    });
 
     es.onerror = () => {
       // Browser auto-reconnects EventSource, nothing to do
     };
 
-    // Store reference so we can close on page unload
-    eventSource = es;
+    eventSources.push(es); // store every reference, not just the last one
   }
 }
 
-// Clean up SSE on page leave
-window.addEventListener('beforeunload', () => {
-  if (eventSource) eventSource.close();
-});
+// Clean up all SSE connections on page leave
+window.addEventListener('beforeunload', closeAllSSE);

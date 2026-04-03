@@ -10,6 +10,7 @@ const compression = require('compression');
 const logger = require('./config/logger');
 const passport = require('./config/passport');
 const { connectDB, closeDB, getDB } = require('./models/database');
+const { closeAllConnections } = require('./config/sse');
 
 // Create an instance of an Express application
 const app = express();
@@ -31,8 +32,13 @@ app.use(
   })
 );
 
-// Gzip/brotli compression
-app.use(compression());
+// Gzip/brotli compression (skip SSE — gzip buffers data, breaking streaming)
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers.accept && req.headers.accept.includes('text/event-stream')) return false;
+    return compression.filter(req, res);
+  },
+}));
 
 // HTTP request logging
 app.use(morgan('short', {
@@ -116,14 +122,21 @@ app.get('/order-status', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'order-status.html'));
 });
 
-// Expose Stripe public key to frontend
-app.get('/api/config', (req, res) => {
-  res.json({
-    stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
-    storeName: process.env.STORE_NAME || 'Bistro',
-    storeAddress: process.env.STORE_ADDRESS || '',
-    storePhone: process.env.STORE_PHONE || '',
-  });
+// Expose public config to frontend (includes live wait time from DB)
+app.get('/api/config', async (req, res, next) => {
+  try {
+    const db = getDB();
+    const waitSetting = await db.collection('settings').findOne({ key: 'waitTime' });
+    res.json({
+      stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
+      storeName: process.env.STORE_NAME || 'Bistro',
+      storeAddress: process.env.STORE_ADDRESS || '',
+      storePhone: process.env.STORE_PHONE || '',
+      waitTime: waitSetting?.value || null,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Health check — verifies DB connection is alive
@@ -181,12 +194,15 @@ const server = app.listen(port, async () => {
   cleanupAbandonedOrders();
   cleanupInterval = setInterval(cleanupAbandonedOrders, 60 * 60 * 1000);
   logger.info(`Server running on http://localhost:${port}`);
+  logger.info(`Admin dashboard: http://localhost:${port}/admin`);
 });
 
 // Graceful shutdown
 function shutdown(signal) {
   logger.info(`${signal} received - shutting down gracefully`);
   clearInterval(cleanupInterval);
+  closeAllConnections(); // drain SSE before server.close() so it doesn't hang
+  server.closeAllConnections(); // close all sockets immediately so server.close() doesn't wait
   server.close(async () => {
     logger.info('HTTP server closed');
     try {
@@ -207,3 +223,14 @@ function shutdown(signal) {
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
+
+// Catch any async error that escapes a try/catch — log it but don't crash
+process.on('unhandledRejection', (reason) => {
+  logger.error({ reason }, 'Unhandled promise rejection');
+});
+
+// Catch synchronous throws that escape all handlers — log then exit cleanly
+process.on('uncaughtException', (err) => {
+  logger.fatal(err, 'Uncaught exception — shutting down');
+  shutdown('uncaughtException');
+});

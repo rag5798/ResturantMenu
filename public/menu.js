@@ -16,13 +16,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (saved) cart = JSON.parse(saved);
   updateCartUI();
 
-  // Fetch menu
+  // Event delegation for menu "Add to Order" buttons
+  document.getElementById('menucon').addEventListener('click', (e) => {
+    const btn = e.target.closest('.add-btn');
+    if (!btn) return;
+    addToCart(btn.dataset.id, btn.dataset.name, parseFloat(btn.dataset.price));
+  });
+
+  // Event delegation for cart +/- buttons
+  document.getElementById('cartItems').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-delta]');
+    if (!btn) return;
+    changeQty(btn.dataset.id, parseInt(btn.dataset.delta, 10));
+  });
+
+  // Cart toggle button
+  document.getElementById('cartBtn').addEventListener('click', toggleCart);
+
+  // Retry button on menu load error
+  document.getElementById('retry-btn').addEventListener('click', () => location.reload());
+
+  // Cart overlay click closes cart
+  document.getElementById('cartOverlay').addEventListener('click', toggleCart);
+
+  // Checkout button
+  document.getElementById('checkoutBtn').addEventListener('click', goToCheckout);
+
+  // Fetch menu and config in parallel
   try {
-    const res = await fetch('/api/menu');
-    if (!res.ok) throw new Error('Failed to load menu');
-    menu = await res.json();
+    const [menuRes, configRes] = await Promise.all([fetch('/api/menu'), fetch('/api/config')]);
+    if (!menuRes.ok) throw new Error('Failed to load menu');
+    menu = await menuRes.json();
     buildCategoryTabs();
     renderMenu('all');
+
+    if (configRes.ok) {
+      const config = await configRes.json();
+      if (config.waitTime) {
+        document.getElementById('wait-time-text').textContent = config.waitTime;
+        document.getElementById('wait-time-banner').classList.remove('hidden');
+      }
+    }
   } catch {
     document.getElementById('menucon').classList.add('hidden');
     document.getElementById('menu-error').classList.remove('hidden');
@@ -75,15 +109,19 @@ function renderMenu(categoryFilter) {
 
   categories.forEach((cat) => {
     cat.items.forEach((item) => {
+      const soldOut = item.available === false;
       const card = document.createElement('section');
-      card.className = 'menu-card';
+      card.className = soldOut ? 'menu-card sold-out' : 'menu-card';
       card.innerHTML = `
         <img src="https://placehold.co/400x240/1a1f2e/ffb454?text=${encodeURIComponent(item.name)}" alt="${esc(item.name)}">
         <div class="card-body">
           <h3>${esc(item.name)}</h3>
           <p class="desc">${esc(item.description)}</p>
           <p class="price">$${item.price.toFixed(2)}</p>
-          <button onclick="addToCart('${esc(item.id)}', '${esc(item.name)}', ${item.price})">Add to Order</button>
+          ${soldOut
+            ? '<span class="sold-out-badge">Sold Out</span>'
+            : `<button class="add-btn" data-id="${esc(item.id)}" data-name="${esc(item.name)}" data-price="${item.price}">Add to Order</button>`
+          }
         </div>
       `;
       container.appendChild(card);
@@ -146,9 +184,9 @@ function updateCartUI() {
         <div class="detail">$${item.price.toFixed(2)} each</div>
       </div>
       <div class="qty-controls">
-        <button onclick="changeQty('${esc(item.id)}', -1)">-</button>
+        <button data-id="${esc(item.id)}" data-delta="-1" aria-label="Remove one ${esc(item.name)}">-</button>
         <span>${item.quantity}</span>
-        <button onclick="changeQty('${esc(item.id)}', 1)">+</button>
+        <button data-id="${esc(item.id)}" data-delta="1" aria-label="Add one ${esc(item.name)}">+</button>
       </div>
     </div>
   `
@@ -170,11 +208,9 @@ function toggleCart() {
   overlay.classList.toggle('hidden');
 
   if (isOpen) {
-    // Closing — return focus to cart button
     cartBtn.setAttribute('aria-expanded', 'false');
     cartBtn.focus();
   } else {
-    // Opening — move focus into sidebar
     cartBtn.setAttribute('aria-expanded', 'true');
     sidebar.focus();
   }
@@ -200,8 +236,50 @@ function showToast(message, type = 'success') {
   setTimeout(() => toast.remove(), 2600);
 }
 
+// ===== Refresh menu in background (catches stale sold-out state) =====
+async function refreshMenu() {
+  try {
+    const res = await fetch('/api/menu');
+    if (!res.ok) return;
+    menu = await res.json();
+    // Re-render whichever category tab is currently active
+    const activeTab = document.querySelector('.tab.active');
+    renderMenu(activeTab ? activeTab.dataset.category : 'all');
+  } catch { /* non-critical */ }
+}
+
+// Refresh when user returns to this tab (covers stale pages left open)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshMenu();
+});
+
 // ===== Checkout =====
-function goToCheckout() {
+async function goToCheckout() {
   if (cart.length === 0) return;
+
+  // Re-fetch menu and validate cart before leaving the page
+  try {
+    const res = await fetch('/api/menu');
+    if (res.ok) menu = await res.json();
+  } catch { /* proceed anyway — server will catch it */ }
+
+  const allItems = menu.categories.flatMap((c) => c.items);
+  const soldOut = cart.filter((cartItem) => {
+    const menuItem = allItems.find((i) => i.id === cartItem.id);
+    return menuItem && menuItem.available === false;
+  });
+
+  if (soldOut.length > 0) {
+    const names = soldOut.map((i) => i.name).join(', ');
+    showToast(`${names} ${soldOut.length > 1 ? 'are' : 'is'} sold out — removed from cart`, 'error');
+    cart = cart.filter((cartItem) => !soldOut.find((s) => s.id === cartItem.id));
+    saveCart();
+    updateCartUI();
+    // Re-render so sold-out items show their badge
+    const activeTab = document.querySelector('.tab.active');
+    renderMenu(activeTab ? activeTab.dataset.category : 'all');
+    return;
+  }
+
   window.location.href = '/checkout';
 }

@@ -12,14 +12,18 @@
         <div class="nav-links">
             <a href="/">Menu</a>
             <a href="/order-status">My Order</a>
-            <a href="/admin">Admin</a>
         </div>
-        <button id="cartBtn" onclick="toggleCart()" aria-label="Open cart" aria-expanded="false" aria-controls="cartSidebar">
+        <button id="cartBtn" aria-label="Open cart" aria-expanded="false" aria-controls="cartSidebar">
             Cart (<span id="cartCount" aria-live="polite">0</span>)
         </button>
     </nav>
 
     <h1>Menu</h1>
+
+    <!-- Estimated wait time banner -->
+    <div id="wait-time-banner" class="wait-time-banner hidden">
+      <span>Est. wait time: </span><strong id="wait-time-text"></strong>
+    </div>
 
     <!-- Category filter tabs -->
     <div id="categoryTabs" role="tablist" aria-label="Menu categories">
@@ -37,17 +41,17 @@
     <!-- Error state (shown if menu fetch fails) -->
     <div id="menu-error" class="error-state hidden">
         <p>Could not load menu. Please try again.</p>
-        <button onclick="location.reload()">Retry</button>
+        <button id="retry-btn">Retry</button>
     </div>
 
     <!-- Cart sidebar -->
-    <div id="cartOverlay" class="hidden" onclick="toggleCart()" aria-hidden="true"></div>
+    <div id="cartOverlay" class="hidden" aria-hidden="true"></div>
     <aside id="cartSidebar" class="hidden" role="dialog" aria-label="Shopping cart" tabindex="-1">
         <h2>Your Order</h2>
         <div id="cartItems"></div>
         <div id="cartFooter" class="hidden">
             <div id="cartTotal">Total: $0.00</div>
-            <button id="checkoutBtn" onclick="goToCheckout()">Proceed to Checkout</button>
+            <button id="checkoutBtn">Proceed to Checkout</button>
         </div>
         <p id="cartEmpty">Your cart is empty.</p>
     </aside>

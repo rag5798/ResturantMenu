@@ -76,15 +76,19 @@ router.get('/stream', (req, res) => {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no', // tell nginx/proxies not to buffer
   });
 
   // Send initial heartbeat so client knows connection is live
   res.write(': connected\n\n');
+  if (typeof res.flush === 'function') res.flush();
 
   addOrderClient(orderId, res);
 
   // Keep-alive every 30s to prevent proxy/load-balancer timeouts
-  const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 30000);
+  const heartbeat = setInterval(() => {
+    try { res.write(': heartbeat\n\n'); } catch { clearInterval(heartbeat); }
+  }, 30000);
   res.on('close', () => clearInterval(heartbeat));
 });
 

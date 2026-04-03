@@ -5,6 +5,7 @@ const { stripeSecretKey } = require('../config/stripe');
 const stripe = require('stripe')(stripeSecretKey, { timeout: 10000 });
 const logger = require('../config/logger');
 const { addAdminClient, broadcastOrderUpdate } = require('../config/sse');
+const { sendOrderReady } = require('../config/email');
 
 // Admin-only middleware
 function requireAdmin(req, res, next) {
@@ -37,12 +38,19 @@ router.get('/stream', (req, res) => {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
   });
   res.write(': connected\n\n');
+  if (typeof res.flush === 'function') res.flush();
 
   addAdminClient(res);
 
-  const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 30000);
+  const heartbeat = setInterval(() => {
+    try {
+      res.write(': heartbeat\n\n');
+      if (typeof res.flush === 'function') res.flush();
+    } catch { clearInterval(heartbeat); }
+  }, 30000);
   res.on('close', () => clearInterval(heartbeat));
 });
 
@@ -66,6 +74,63 @@ router.get('/', async (req, res, next) => {
       total,
       page,
       pages: Math.ceil(total / limit),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/orders/analytics - Best-selling items + revenue summary
+router.get('/analytics', async (req, res, next) => {
+  try {
+    const db = getDB();
+    const col = db.collection('orders');
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(startOfToday);
+    startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+
+    const [topItems, summary] = await Promise.all([
+      col.aggregate([
+        { $match: { paymentStatus: 'paid' } },
+        { $unwind: '$items' },
+        {
+          $group: {
+            _id: '$items.name',
+            unitsSold: { $sum: '$items.quantity' },
+            revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+          },
+        },
+        { $sort: { unitsSold: -1 } },
+        { $limit: 10 },
+      ]).toArray(),
+      col.aggregate([
+        {
+          $facet: {
+            allTime: [
+              { $match: { paymentStatus: 'paid' } },
+              { $group: { _id: null, revenue: { $sum: '$total' }, orders: { $sum: 1 } } },
+            ],
+            today: [
+              { $match: { paymentStatus: 'paid', createdAt: { $gte: startOfToday } } },
+              { $group: { _id: null, revenue: { $sum: '$total' }, orders: { $sum: 1 } } },
+            ],
+            thisWeek: [
+              { $match: { paymentStatus: 'paid', createdAt: { $gte: startOfWeek } } },
+              { $group: { _id: null, revenue: { $sum: '$total' }, orders: { $sum: 1 } } },
+            ],
+          },
+        },
+      ]).toArray(),
+    ]);
+
+    const s = summary[0];
+    res.json({
+      topItems,
+      allTime: s.allTime[0] || { revenue: 0, orders: 0 },
+      today: s.today[0] || { revenue: 0, orders: 0 },
+      thisWeek: s.thisWeek[0] || { revenue: 0, orders: 0 },
     });
   } catch (err) {
     next(err);
@@ -108,6 +173,7 @@ router.patch('/:id/status', validateId, verifyCsrf, async (req, res, next) => {
       return res.status(404).json({ error: 'Order not found' });
     }
     broadcastOrderUpdate(req.params.id, { status, type: 'status_update' });
+    if (status === 'ready') sendOrderReady(result);
     res.json(result);
   } catch (err) {
     next(err);

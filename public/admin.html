@@ -47,6 +47,7 @@
         <div id="admin-container">
             <div id="admin-tabs" role="tablist" aria-label="Admin sections">
                 <button class="admin-tab active" data-tab="orders" role="tab" aria-selected="true">Orders</button>
+                <button class="admin-tab" data-tab="analytics" role="tab" aria-selected="false">Analytics</button>
                 <button class="admin-tab" data-tab="menu-editor" role="tab" aria-selected="false">Menu Editor</button>
             </div>
 
@@ -54,6 +55,12 @@
             <div id="tab-orders" class="tab-panel">
                 <div id="admin-header">
                     <h1>Orders</h1>
+                    <div id="wait-time-control">
+                        <label for="wait-time-input">Est. Wait:</label>
+                        <input type="text" id="wait-time-input" placeholder="e.g. 25 min" maxlength="50" />
+                        <button id="save-wait-time-btn">Set</button>
+                        <button id="clear-wait-time-btn">Clear</button>
+                    </div>
                     <div id="filter-bar">
                         <button class="filter active" data-status="all">All</button>
                         <button class="filter" data-status="pending">Pending</button>
@@ -67,6 +74,19 @@
                     <div class="loading-state">
                         <div class="spinner"></div>
                         <p>Loading orders...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS TAB -->
+            <div id="tab-analytics" class="tab-panel hidden">
+                <div id="admin-header">
+                    <h1>Analytics</h1>
+                </div>
+                <div id="analytics-content">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading analytics...</p>
                     </div>
                 </div>
             </div>
@@ -114,12 +134,12 @@
     <div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
 
     <!-- Confirm modal -->
-    <div id="confirm-overlay" class="confirm-overlay hidden" onclick="cancelConfirm()">
-        <div class="confirm-card" onclick="event.stopPropagation()">
+    <div id="confirm-overlay" class="confirm-overlay hidden">
+        <div class="confirm-card">
             <p id="confirm-message">Are you sure?</p>
             <div class="confirm-actions">
-                <button class="confirm-cancel" onclick="cancelConfirm()">Cancel</button>
-                <button class="confirm-delete" onclick="runConfirmAction()">Confirm</button>
+                <button class="confirm-cancel">Cancel</button>
+                <button class="confirm-delete">Confirm</button>
             </div>
         </div>
     </div>
