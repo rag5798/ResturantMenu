@@ -7,7 +7,7 @@ const { getDB } = require('../models/database');
 const { ObjectId } = require('mongodb');
 const menuDataFallback = require('../models/menu');
 const logger = require('../config/logger');
-const { sendOrderConfirmation } = require('../config/email');
+// const { sendOrderConfirmation } = require('../config/email'); // disabled until custom domain
 const { notifyNewOrder } = require('../config/discord-notify');
 const { broadcastOrderUpdate } = require('../config/sse');
 
@@ -222,7 +222,7 @@ router.post('/webhook', async (req, res) => {
           // Send confirmation email (non-blocking — never fails the webhook)
           const order = await db.collection('orders').findOne({ _id: new ObjectId(orderId) });
           if (order) {
-            sendOrderConfirmation(order);
+            // sendOrderConfirmation(order); // disabled until custom domain
             notifyNewOrder(order);
             broadcastOrderUpdate(orderId, { status: 'preparing', paymentStatus: 'paid', type: 'new_order' });
           }

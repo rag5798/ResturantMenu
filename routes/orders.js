@@ -5,7 +5,7 @@ const { stripeSecretKey } = require('../config/stripe');
 const stripe = require('stripe')(stripeSecretKey, { timeout: 10000 });
 const logger = require('../config/logger');
 const { addAdminClient, broadcastOrderUpdate } = require('../config/sse');
-const { sendOrderReady } = require('../config/email');
+// const { sendOrderReady } = require('../config/email'); // disabled until custom domain
 
 // Admin-only middleware
 function requireAdmin(req, res, next) {
@@ -173,7 +173,7 @@ router.patch('/:id/status', validateId, verifyCsrf, async (req, res, next) => {
       return res.status(404).json({ error: 'Order not found' });
     }
     broadcastOrderUpdate(req.params.id, { status, type: 'status_update' });
-    if (status === 'ready') sendOrderReady(result);
+    // if (status === 'ready') sendOrderReady(result); // disabled until custom domain
     res.json(result);
   } catch (err) {
     next(err);
