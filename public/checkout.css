@@ -419,3 +419,53 @@
   font-weight: 700;
   text-decoration: none;
 }
+
+/* ====== Mobile checkout ====== */
+@media (max-width: 600px) {
+  #checkout-container {
+    padding: 0 12px;
+  }
+
+  /* Larger tap targets for form inputs */
+  #customer-form input,
+  #customer-form textarea,
+  .lookup-card input {
+    min-height: 48px;
+    font-size: 1rem;
+    padding: 12px 14px;
+  }
+
+  #customer-form textarea {
+    min-height: 80px;
+  }
+
+  /* Order type tabs */
+  .order-type-tab {
+    min-height: 48px;
+    font-size: 0.95rem;
+  }
+
+  /* Large, thumb-friendly pay button */
+  #payBtn {
+    min-height: 56px;
+    font-size: 1.1rem;
+    border-radius: 16px;
+  }
+
+  #lookup-btn {
+    min-height: 52px;
+    font-size: 1rem;
+  }
+
+  #success-msg,
+  #cancelled-msg,
+  #verify-error {
+    margin: 40px auto;
+    padding: 24px 16px;
+  }
+
+  .success-items-card,
+  .success-pickup-card {
+    max-width: 100%;
+  }
+}

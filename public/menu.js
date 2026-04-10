@@ -33,6 +33,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Cart toggle button
   document.getElementById('cartBtn').addEventListener('click', toggleCart);
 
+  // Sticky cart bar (mobile)
+  const stickyBar = document.getElementById('sticky-cart-bar');
+  stickyBar.addEventListener('click', toggleCart);
+  stickyBar.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCart(); }
+  });
+
   // Retry button on menu load error
   document.getElementById('retry-btn').addEventListener('click', () => location.reload());
 
@@ -159,7 +166,18 @@ function saveCart() {
 
 function updateCartUI() {
   const count = cart.reduce((s, i) => s + i.quantity, 0);
+  const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   document.getElementById('cartCount').textContent = count;
+
+  // Sticky cart bar
+  const stickyBar = document.getElementById('sticky-cart-bar');
+  if (count === 0) {
+    stickyBar.classList.add('hidden');
+  } else {
+    stickyBar.classList.remove('hidden');
+    document.getElementById('sticky-cart-count').textContent = `${count} item${count !== 1 ? 's' : ''}`;
+    document.getElementById('sticky-cart-total').textContent = `$${total.toFixed(2)}`;
+  }
 
   const container = document.getElementById('cartItems');
   const footer = document.getElementById('cartFooter');
@@ -193,7 +211,6 @@ function updateCartUI() {
     )
     .join('');
 
-  const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   document.getElementById('cartTotal').textContent = `Total: $${total.toFixed(2)}`;
 }
 
